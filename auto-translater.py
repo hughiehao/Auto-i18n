@@ -98,6 +98,29 @@ def translate_text(text, lang):
     output_text = completion.choices[0].message.content
     return output_text
 
+# 定义翻译front_matter函数
+def translate_front_matter(text, lang, param):
+    target_lang = {
+        "en": "English",
+        "es": "Spanish",
+        "ar": "Arabic",
+        'cn': "Chinese"
+    }[lang]
+
+    # 使用OpenAI API进行翻译
+    completion = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {
+                "role": "user",
+                "content": f"Suppose the following text is a JSON format. The value of the key for ```{param}``` translates into {target_lang} and other key are not changed. maintain the original markdown format.\n\n\n{text}\n\n\nTranslated into {target_lang}:",
+            }
+        ],
+    )
+
+    # 获取翻译结果
+    output_text = completion.choices[0].message.content
+    return output_text
 
 # 定义文章拆分函数
 def split_text(text, max_length):
@@ -164,6 +187,9 @@ def translate_file(input_file, filename, lang):
                 # print(f'{key}: {value_str}') # 打印出识别后储存的 FrontMatter 数据
         # 暂时删除 Front Matter
         input_text = input_text.replace("---\n"+front_matter_text+"\n---\n", "")
+        #print(front_matter_text)
+        front_matter_text = translate_front_matter(front_matter_text, lang, 'title')
+        #print(front_matter_text)
     else:
         #print("没有找到front matter，不进行处理。")
         pass
